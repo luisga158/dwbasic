@@ -1,0 +1,31 @@
+<?php
+return [
+    'title' => 'Desarrollo WEB',
+    'titlepg' => 'Portal mundo desarrollo WEB',
+    'lblhome' => 'Inicio',
+    'lblin' => 'Ingresar',
+    'lblreg' => 'Registrarse',
+    'lblout' => 'Cerrar sesion',
+    'lblmail' => 'Correo electronico',
+    'lblpsw' => 'Contraseña',
+    'lblrecordar' => 'Recordar mis datos',
+    'lblpswfrgt' => 'Olvidaste tu contraseña?',
+    'lblname' => 'Nombre de Usuario',
+    'lblpswconf' => 'Confirmar Contraseña',
+    'lblvrfymail' => 'Verifica tu correo electronico',
+    'lblsendvrfy' => 'Un correo de verificacion a sido enviado a su correo.',
+    'lblsendvrfybfr' => 'Antes de continuar por favor verifique su correo.',
+    'lblsendvrfyagn' => 'Para ello por favor,',
+    'lblsendvrfyagnlnk' => 'Presione o de click aqui para recibir el enlace de verificacion',
+    'lblrst' => 'Reiniciar Contraseña',
+    'lblbtnrst' => 'Enviar correo para cambiar contraseña',
+    'lblmailvrfyW' => 'Ups!',
+    'lblmailvrfyHola' => 'Hola!',
+    'lblmailnuno' => 'Por favor haga clic en el botón de abajo para verificar su dirección de correo electrónico.',
+    'lblmailvrfbtn' => 'Verificar Correo Electrónico',
+    'lblmailndos' => 'Si no creó una cuenta, no es necesario realizar ninguna otra acción.',
+    'lblmailvrfySlds' => 'Saludos',
+    'lblmailstone' => 'Si tienes problemas al dar click en el boton "',
+    'lblmailsttwo' => '" ,copia y pega el siguiente enlace en tu navegador: '
+];
+?>

@@ -1,0 +1,31 @@
+<?php
+return [
+    'title' => 'Web Developer main page',
+    'titlepg' => 'The World from Web Developer',
+    'lblhome' => 'Home',
+    'lblin' => 'Login',
+    'lblreg' => 'Register',
+    'lblout' => 'Logout',
+    'lblmail' => 'E-Mail Address',
+    'lblpsw' => 'Password',
+    'lblrecordar' => 'Remember Me',
+    'lblpswfrgt' => 'Forgot Your Password?',
+    'lblname' => 'Name',
+    'lblpswconf' => 'Confirm Password',
+    'lblvrfymail' => 'Verify Your Email Address',
+    'lblsendvrfy' => 'A fresh verification link has been sent to your email address.',
+    'lblsendvrfybfr' => 'Before proceeding, please check your email for a verification link.',
+    'lblsendvrfyagn' => 'If you did not receive the email,',
+    'lblsendvrfyagnlnk' => 'click here to request another',
+    'lblrst' => 'Reset Password',
+    'lblbtnrst' => 'Send Password Reset Link',
+    'lblmailvrfyW' => 'Whoops!',
+    'lblmailvrfyHola' => 'Hello!',
+    'lblmailnuno' => 'Please click the button below to verify your email address.',
+    'lblmailvrfbtn' => 'Verify Email Address',
+    'lblmailndos' => 'If you did not create an account, no further action is required.',
+    'lblmailvrfySlds' => 'Regards',
+    'lblmailstone' => 'If you’re having trouble clicking the "',
+    'lblmailsttwo' => '" button, copy and paste the URL below into your web browser: '
+];
+?>

@@ -1,0 +1,37 @@
+Laravel requiere composer para su instalacion, debemos instala composer primero,
+descargandolo en:			https://getcomposer.org/
+-------------------------------------------------------------------------------------------------------------
+Y para instalar laravel el comando:	composer global require laravel/installer
+-------------------------------------------------------------------------------------------------------------
+=============================================================================================================
+Doc. Laravel:    Getting Started -> Homestead    =   Enpezando -> Granja
+=============================================================================================================
+Lo primero que dice la documentacion de laravel es instalar la maquina virtual:	Homestead
+https://laravel.com/docs/7.x/homestead
+
+
+Para lo cual se requiere la previa instalacion de Vagrant y de VirtualBox:
+
+Vagran se descarga de:		https://www.vagrantup.com/downloads.html
+Y VirtualBox de:			https://www.virtualbox.org/wiki/Downloads
+
+Para agregar la virtual box de vagrant se usa el comando:	vagrant box add laravel/homestead
+
+Me muestra estos datos:
+
+	box: Loading metadata for box 'laravel/homestead'
+	box: URL: https://vagrantcloud.com/laravel/homestead
+
+Y luego se elije la virtual box segun la que usemos.
+
+Descargamos git de:			  https://git-scm.com/download/win
+Consola de git:			      MinTTY (Terminal por defectode MSYS2)
+-------------------------------------------------------------------------------------------------------------
+Instalamos homestead con el comando:	git clone https://github.com/laravel/homestead.git ~/Homestead
+-------------------------------------------------------------------------------------------------------------
+Mas informacion sobre este proyecto en:	http://msysgit.github.io/
+
+-------------------------------------------------------------------------------------------------------------
+vagrant init laravel/homestead
+vagrant up
+-------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,3 @@
+Teniendo ya la base de registro para usuarios, necesitamos asociar perfil, roll, publicaciones y proyectos.
+
+php artisan make:migration create_perfiluser_table

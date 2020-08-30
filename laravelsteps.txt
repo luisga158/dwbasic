@@ -1,0 +1,2549 @@
+================================================================================
+My notes from Laravel - Mis notas de Laravel
+================================================================================
+Archivo:
+.env        No puede tener espacios en los nombres de los valores de las variables que creemos.
+
+La ruta de las clases Illuminate, muy usadas es la sgte.:
+
+vendor\laravel\framework\src\Illuminate
+
+=======================================================================================
+=======================================================================================
+Orden de los videos
+=======================================================================================
+0.- Laravel | Crud con Múltiples Tablas y Subir Múltiples Imágenes | Introducción
+	https://www.youtube.com/watch?v=T4Eb2mYDRjE&t=23s
+1.- Laravel | Instalación y configuración del proyecto
+	https://www.youtube.com/watch?v=-vISZziDE8w&t=15s
+2.- Laravel | Conexión a la Base de Datos y Creación de Modelos y Migraciones
+	https://www.youtube.com/watch?v=9B1VD3sIpqk
+3.- Laravel | Configuración de Rutas y Creación de Controladores en Laravel
+	https://www.youtube.com/watch?v=eKzf-RAlx48&t=10s
+4.- Laravel | Creando el Índex de Productos en Laravel
+	https://www.youtube.com/watch?v=BaNU8VRoCgE
+5.- Laravel | Relaciones Polimorfiscas en Laravel
+	https://www.youtube.com/watch?v=ceMzmoYWRfw&t=49s
+
+
+=======================================================================================
+Insatalación de Laravel
+=======================================================================================
+Previamente debemos tener instalado XAMPP, WAMPP o MAMPP segun SO y preferencia.
+Y por supuesto un editor para código.
+----------------------------------------------------------------------------------------------------------
+Requisitos de Laravel:
+https://getcomposer.org/
+https://www.npmjs.com/get-npm
+Hay que instalarlos.
+----------------------------------------------------------------------------------------------------------
+Para el correcto funcionamiento de Composer y NodeJS.
+Debemos ir a propiedades del sistema y en Opciones avanzadas, Variables del sistema.
+Y en Path añadimos los directorios en mi caso:
+D:\xampp\php
+C:\ProgramData\ComposerSetup\bin
+
+C:\Users\Gabriel\AppData\Roaming\Composer\vendor\bin
+Igual a:
+%USERPROFILE%\AppData\Roaming\Composer\vendor\bin
+
+C:\Program Files\nodejs\
+----------------------------------------------------------------------------------------------------------
+Hecho esto seguimos con la instalación de Laravel:
+
+Este comado lo use para la instalacion de laravel:
+composer global require laravel/installer
+=======================================================================================
+Creacion de un nuevo proyecto (Nota: aún no activar Xampp o su localserver)
+=======================================================================================
+Desde el cmd, nos ubicamos en nuestro directorio:
+
+Unidad:\xampp\htdocs
+ Y con el comando:
+
+Vía Laravel		(laravel newlaravel new blogblog)
+	laravel new blog
+Vía Composer Create-Project:
+	composer create-project --prefer-dist laravel/laravel nameproyect
+
+donde nameproyect es la carpeta que se creará para el proyecto
+
+Segundo intento:
+composer create-project --prefer-dist laravel/laravel imagenes2 "6.*"
+
+3er intento
+composer create-project --prefer-dist laravel/laravel imagenes2
+----------------------------------------------------------------------------------------------------------
+Seguimos con la instalacion para facilitar la autenticación, y la instalacion de vue:
+Para lo cual desde la carpeta creada para el proyecto ejecutamos:
+
+composer require laravel/ui
+composer require laravel/ui --dev
+
+php artisan ui vue --auth
+probablemente nos pedira ejecutar el siguiente comando
+
+npm install && npm run dev
+
+hecho esto:
+ejecutamos:
+composer require laravelcollective/html
+----------------------------------------------------------------------------------------------------------
+Con esto ya tenemos la base del proyecto, para iniciar el servidor ejecutamos en la carpeta del proyecto:
+
+php artisan serve
+----------------------------------------------------------------------------------------------------------
+Para crear automaticamente las tablas iniciales, usamos el comando:
+php artisan migrate
+php artisan migrate --all
+----------------------------------------------------------------------------------------------------------
+Creando nuevos modelos:
+
+php artisan make:model NameTable
+donde NameTable es el nombre de la tabla a crear 
+
+php artisan make:model Product -m
+----------------------------------------------------------------------------------------------------------
+php artisan migrate:refresh
+----------------------------------------------------------------------------------------------------------
+php artisan make:model Image -m
+----------------------------------------------------------------------------------------------------------
+php artisan make:controller admin/ProductController --resource
+----------------------------------------------------------------------------------------------------------
+php artisan route:list
+
+=======================================================================================
+Aditional info carpetas, archivos y comandos
+=======================================================================================
+.env	Es un archivo que contiene los datos de conexion con el servidor y la base de datos
+	La base de datos se debe crear por phpmyadmin, antes de proceder.
+
+database\migrations		Carpeta que almacena las migraciones
+
+app	Carpeta que contiene los modelos que creamos
+
+app\config\database.php	Datos de conexiones permitidas
+----------------------------------------------------------------------------------------------------------
+En el archivo de la migracion definimos los campos que queremos agregar al modelo creado, en la funcion up.
+Y en el archivo del modelo en la carpeta app, agregamos los mismos campos agregados en la migracion.
+
+Despues de las modificaciones anteriores, con el comando 'php artisan migrate:refresh', actualiza las bd en phpmyadmin.
+----------------------------------------------------------------------------------------------------------
+routes\web.php	Archivo para la configuración de rutas.
+		Ej:  (Vemos como cambiamos la url de products a productos)
+			Route::resource('productos','admin\ProductController')->names('products');
+
+resources\views	Carpeta que contiene los archivos configurados en las rutas.
+		Ej. Comando para crear el controlador:
+			php artisan make:controller admin/ProductController --resource
+
+app\http\Controllers		Carpeta que archiva los controladores, en la subcarpeta indicada.
+----------------------------------------------------------------------------------------------------------
+El controlador creado añade funciones predeterminadas, a las cuales se le asignan las vistas.
+
+Para la funcion create:
+return view('products.create');		Dicha vista se localiza en: 'resources\views\products', en este caso.
+
+Para la funcion index (agregando paginacion):
+	Primero importamos el modelo asi: 'use App\Product;'
+Y en las funcion index colocamos:
+	$products = Product::orderBy('id','DESC')->paginate(4);
+	return view('products.index', compact('products'));
+Donde la primera linea crea la variable $products con su paginación
+	y la segunda la compacta para enviar a la vista index
+
+Vamos pues a la vista 'resources/views/products/index.blade.php'
+
+En 'resources/views/layouts/app.blade.php' encontramos la plantilla por defecto, la cual es usada en:
+	'resources/views/home.blade.php' con el comando '@extends('layouts.app')'
+Podemos usar home.blade.php, y despues de copiar y modificar, ajustarla a nuestros objetivos.
+
+Como ejemplo ver index.blade.php
+Utiliza un foreach para minimizar código.
+=======================================================================================
+Relaciones Polimorficas
+=======================================================================================
+Crear la realcion en los modelos
+----------------------------------------------------------------------------------------------------------
+En la carpeta database/migrations
+
+	En el archivo de las imagenes añadimos en la funcion up(), antes del timestamp:
+
+			$table->morphs('imageable');
+
+Luego refrescamos la migracion para actualizar los campos:
+			php artisan migrate:refresh
+
+El campo imageable_type asocia el modelo con images
+----------------------------------------------------------------------------------------------------------
+El modelo Product.php, agregamos antes del final de la clase para permitir multiples imagenes 
+ambiamos el el siguiente codigo
+----------------------------------------------------------------------------------------------------------
+public function image()
+    {
+        return $this->morphOne('App\Image', 'imageable');
+    }
+----------------------------------------------------------------------------------------------------------
+cambiado a:
+----------------------------------------------------------------------------------------------------------
+public function images()
+    {
+        return $this->morphMany('App\Image', 'imageable');
+	Tambien se puede usar
+        return $this->morphMany(Image::class, 'imageable');
+    }
+----------------------------------------------------------------------------------------------------------
+Al modelo Image.php, agregamos antes del final de la clase para permitir multiples imagenes 
+----------------------------------------------------------------------------------------------------------
+public function imageable()
+    {
+        return $this->morphTo();
+    }
+=======================================================================================
+01.03.- Instalacion
+=======================================================================================
+Primero que todo en la documentacion de Laravel vemos la guia de homestead:
+
+https://laravel.com/docs/7.x/homestead
+
+Se debe instalar una maquina virtual, en nuestro caso instalaremos:
+                Oracle VM Virtual Box
+                
+Tambien pide la instalacion de Vagrant. Despues se reinicia.
+
+Y se ejecuta el comando:        vagrant box add laravel/homestead
+
+En mi caso pidio actualizar powershell, para ello abrimos la consola de powershell
+y ejecutamos:
+                    iex "& { $(irm https://aka.ms/install-powershell.ps1) } -UseMSI"
+=======================================================================================
+02.06.- Routes: Diversos usos de las rutas en web.php
+=======================================================================================
+/* http://127.0.0.1:8000/ */
+Route::get('/', function () {
+    return view('welcome');
+});
+----------------------------------------------------------------------------------------------------------
+/* http://127.0.0.1:8000/name */
+Route::get('/name', function () {
+    return 'name';
+});
+----------------------------------------------------------------------------------------------------------
+/* Agrupacion de rutas bajo un prefijo. http://127.0.0.1:8000/admin/name/Luis */
+/* Tambien se puede definir middleware entre otras cosas */
+Route::group(["prefix" => 'admin'], function () {
+    Route::get('/name/{name?}', function ($name = "Default") {
+        return 'Hola ' . $name;
+    })->where('name','[A-Za-z]+'); /* Patron fijado para el parametro name */
+});
+----------------------------------------------------------------------------------------------------------
+/* http://127.0.0.1:8000/foo    Para mapear aun sin entender completamente*/
+Route::any('/foo2', function () {
+    return '/foo2';
+});
+----------------------------------------------------------------------------------------------------------
+/* Redireccion de ruta */
+Route::redirect('/foo','/admin/name/redirect');
+----------------------------------------------------------------------------------------------------------
+/* http://127.0.0.1:8000/match */
+Route::match(['get', 'post'], '/match', function () {
+    return 'match';
+});
+----------------------------------------------------------------------------------------------------------
+/*Route::get('/rte/{name?}', function ($name = "Default") {
+    return 'Hola ' . $name;
+})->name('route'); /* Patron de ruta fija sin entender */
+=======================================================================================
+02.07.- Helpers: Funciones que hacen algo
+=======================================================================================
+env()	Devuelve valor de las variables de entorno en el archivo .env.
+----------------------------------------------------------------------------------------------------------
+=======================================================================================
+Multiidioma
+=======================================================================================
+Para ello en la carpeta:
+----------------------------------------------------------------------------------------------------------
+resources\lang
+Se crea una carpeta por cada idioma ej
+resources\lang\en		English
+resources\lang\es		Español
+----------------------------------------------------------------------------------------------------------
+Y dentro se crea un archivo ej main.php:
+Ej. para ingles:
+<?php
+return [
+    'title' => 'Title'
+];
+?>
+----------------------------------------------------------------------------------------------------------
+Ej. para español:
+<?php
+return [
+    'title' => 'Titulo'
+];
+?>
+----------------------------------------------------------------------------------------------------------
+En:
+
+config\app.php
+
+Podemos modificar el lenguaje, cambiando la siguiente linea:
+
+'locale' => 'es',
+'locale' => 'en',
+etc...
+=======================================================================================
+Archivos para asignacion de rutas:
+=======================================================================================
+routes/web.php
+	Route::get('/pruebaii', function () {
+    		return view('pruebaii');
+	});
+----------------------------------------------------------------------------------------------------------
+app/Http/Controllers/HomeController.php
+	public function pruebaii() {
+		return view('pruebaii');
+	}
+=======================================================================================
+Asignacion de viewpru o nuevas rutas y sus variables
+=======================================================================================
+En web.php: 
+		Route::get('/viewpru', 'HomeController@viewpru')->name('viewpru');
+----------------------------------------------------------------------------------------------------------
+En app/Http/Controllers/HomeController.php
+
+	public function viewpru() {
+		$name = "Luis";
+		$apell = "Hernandez";
+		$arrnumfive = [1,2,4,5,6];
+		$numvar = 1;
+		$numvarii = 1;
+		//$numvarii = 11;
+		return view('viewpru', compact("name","apell","arrnumfive","numvar","numvarii"));
+	}
+----------------------------------------------------------------------------------------------------------
+Seccion del archivo:  (Ver como las variables definidas arriba se usan en este archivo)
+resources\views\viewpru.blade.php
+
+<h3>Hola {{ $name ?? '' }} {{ $apell }}</h3>
+    @endif
+    <hr>
+    @foreach($arrnumfive as $v)
+    <p> {{ $v }} </p>
+    @endforeach
+=======================================================================================
+03.11- Integración con Vue
+=======================================================================================
+Archivo Plantilla Exmpl Vue:
+resources\js\components\ExampleComponent.vue
+=======================================================================================
+Comandos importantes:	(Ejecutar previo instalacion)
+----------------------------------------------------------------------------------------------------------
+Instala nodejs:	(Instala Carpeta node_modules)
+
+npn install
+----------------------------------------------------------------------------------------------------------
+Compila assets:	(Compila las dependencias)
+
+npn run dev
+=======================================================================================
+Creando ruta VUE
+----------------------------------------------------------------------------------------------------------
+En:
+----------------------------------------------------------------------------------------------------------
+routes\web.php
+Route::view('/vue', 'vue');
+----------------------------------------------------------------------------------------------------------
+Creamos:
+resources\views\vue.blade.php
+Con el siguiente contenido:
+----------------------------------------------------------------------------------------------------------
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Integracion con Vue</title>
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}" >
+</head>
+<body>
+    <div id="app">
+        <example-component></example-component>
+    </div>
+    <script src="{{ asset('js/app.js') }}"></script>
+</body>
+=======================================================================================
+Desinstalando Vue y Bootstrap e Instalando React
+=======================================================================================
+Con este comando se remueve el front-ent inicial:
+
+php artisan preset none
+----------------------------------------------------------------------------------------------------------
+Para instalar React:
+
+php artisan preset react
+=======================================================================================
+4.12.- Bases de datos
+=======================================================================================
+En web.php con el siguiente codigo podemos probar la conexion a la base de datos:
+
+/* Prueba de conexion a base de datos */
+Route::get('/', function () {
+    try {
+        DB::connection()->getPdo();
+    } catch (\Exception $e) {
+        die("No se pudo realizar la conexion a la base de datos, favor verificar su configuracion. Error:" . $e );
+    }
+});
+=======================================================================================
+4.13.- Migraciones
+=======================================================================================
+En la carpeta database\migrations, encontraremos dos funciones:
+
+up que contiene la estructura de la tabla y la crea.
+down que elimina la tabla.
+----------------------------------------------------------------------------------------------------------
+Para ver todos los comandos de artisan ejecutamos
+
+php artisan
+----------------------------------------------------------------------------------------------------------
+Para crear una migracion con sus metodos, ejecutamos:
+
+php artisan make:migration create_post_table
+
+Donde post es el nombre de la tabla
+
+Modificamos funciones así:
+----------------------------------------------------------------------------------------------------------
+    public function up()
+    {
+        Schema::create('posts', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->text('content');
+            $table->timestamps();
+        });
+    }
+----------------------------------------------------------------------------------------------------------
+    public function down()
+    {
+        Schema::dropIfExists('posts');
+    }
+----------------------------------------------------------------------------------------------------------
+php artisan make:migration create_comments_table
+
+Modificamos funciones así:
+----------------------------------------------------------------------------------------------------------
+    public function up()
+    {
+        Schema::create('comments', function (Blueprint $table) {
+            $table->increments('id');
+            $table->text('content');
+            $table->timestamps();
+        });
+    }
+----------------------------------------------------------------------------------------------------------
+    public function down()
+    {
+        Schema::dropIfExists('comments');
+    }
+----------------------------------------------------------------------------------------------------------
+php artisan make:migration add_user_id_to_posts_table
+
+Modificamos funciones así:
+----------------------------------------------------------------------------------------------------------
+    public function up()
+    {
+        Schema::table('posts', function (Blueprint $table) {
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        });
+    }
+----------------------------------------------------------------------------------------------------------
+    public function down()
+    {
+        Schema::table('posts', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+        });
+    }
+=======================================================================================
+En el archivo generado en database\migrations.
+En la funcion up, es donde determinamos los campos de nuestra tabla.
+
+Con el siguiente comando, obtenemos la creacion de las tablas:
+
+php artisan migrate
+----------------------------------------------------------------------------------------------------------
+Para Eliminar las tablas:
+
+php artisan migrate:rollback
+=======================================================================================
+Para agregar datos a una tabla ya creada, y con datos
+=======================================================================================
+php artisan make:migration add_user_id_and_post_id_to_comment_table
+
+Donde posts es el nombre de la tabla a la que le adicionaremos campos.
+
+Modificamos funciones así:
+----------------------------------------------------------------------------------------------------------
+    public function up()
+    {
+        Schema::table('comments', function (Blueprint $table) {
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->unsignedBigInteger('post_id');
+            $table->foreign('post_id')->references('id')->on('posts')->onDelete('cascade');
+        });
+    }
+----------------------------------------------------------------------------------------------------------
+    public function down()
+    {
+        Schema::table('comment', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+            $table->dropForeign(['post_id']);
+        });
+    }
+=======================================================================================
+4.14.- Modelos
+=======================================================================================
+Comando para entrar en la consola de modelos
+
+php artisan tinker
+-----------------------------------------------------------------------------------------------------------
+Comando para ver tabla y contenido de la tabla User
+
+User::all()
+-----------------------------------------------------------------------------------------------------------
+Añadir registro desde tinker
+
+User::create(["name" => "LuisN", "email" => "email@email.com", "password" => "1234"])
+=======================================================================================
+4.15.- Seeders
+=======================================================================================
+Lo primero que se cita es que sirve para llenar tablas con informacion ficticia.
+Ubicacion:
+database\seeds
+
+La clase inicial es database\seeds\DatabaseSeeder.php, que sirve de modelo para los demas seeders.
+---------------------------------------------------------------------------------------
+Para crear un seeder, usamos el comando (UsersTableSeeder como ej.):
+---------------------------------------------------------------------------------------
+php artisan make:seeder UsersTableSeeder
+---------------------------------------------------------------------------------------
+Con el anterior comando se crea el archivo:
+database\seeds\UsersTableSeeder.php
+
+Añadimos el modelo así:
+use \App\User;
+
+Y en la funcion run() añadimos la creacion de usuarios que debe coincidir con el contenido de la variabe
+$fillable, del archivo app\User.php
+
+Asi:
+        User::create(["name" => "Luis Gabriel Hernandez", "email" => "luisga158@gmail.com", "password" => '$2y$10$w4rpOFcLuNHQd16ajLgTMOuHmwdsLRV9d4g5Flidi9dIL5YjY/v.W']);
+        User::create(["name" => "LuisN", "email" => "email@email.com", "password" => "1234"]);
+        User::create(["name" => "LuisN2", "email" => "email2@email.com", "password" => "1234"]);
+---------------------------------------------------------------------------------------        
+Para su uso debemos registrarlo dentro de la clase DatabaseSeeder en la funcion run así:
+
+    $this->call(UsersTableSeeder::class);
+
+Y luego con el comando:                     php artisan db:seed
+
+Si sale un error se debe ejecutar primero ( y luego: php artisan db:seed ):
+
+    composer dump-autoload
+---------------------------------------------------------------------------------------
+Los archivos factories en Laravel es donde especificamos una estructura de gato para nuestros modelos.
+
+En el archivo:      database\factories\UserFactory.php
+
+            Encontre la siguiente linea: 
+                'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+                
+Esto creaba un password por defecto asi que:
+            La modifico por 
+                'password' => $faker->password,
+Y ya el seeder toma los pass bien.
+
+Cabe resaltar que el password no se ve en la tabla tal cual, se ve como un codigo, es necesario copiarlo, para agregar al UsersTableSeeder.
+
+Sin embargo esta forma es manual, debido a que hay que colocar todos los datos de cada usuario.
+---------------------------------------------------------------------------------------
+Automatizando la creacion de seeds
+---------------------------------------------------------------------------------------
+Modificando database\seeds\UsersTableSeeder.php
+
+Dentro de la funcion run remplazamos por:   factory(User::class)->times(10)->create();
+
+Que crea 10 usuarios con el modelo de clase User. Ejecutamos:       php artisan db:seed
+
+Con esto queda claro que el seeder y el factory van de la mano, junto con la clase declarada en app.
+---------------------------------------------------------------------------------------
+ Para rehacer los datos semilla, vamos a:
+ 
+ database\seeds\DatabaseSeeder.php
+ --------------------------------------------------------------------------------------- 
+ Y creamos la funcion la funcion:
+ ---------------------------------------------------------------------------------------
+     public function truncateTables(array $tables)
+     {
+        DB::statement('SET FOREIGN_KEY_CHECKS = 0;');
+        
+        foreach ($tables as $table){
+            DB::table($table)->truncate();
+        }
+        
+        DB::statement('SET FOREIGN_KEY_CHECKS = 1;');
+    }
+---------------------------------------------------------------------------------------
+Y en la funcion run agregamos así:
+---------------------------------------------------------------------------------------
+    public function run()
+    {
+        $this->truncateTables([
+            'users'
+        ]);
+        $this->call(UsersTableSeeder::class);
+    }
+---------------------------------------------------------------------------------------    
+Con esto vamos a:
+
+database\seeds\UsersTableSeeder.php
+
+Y modificando el parametro de times cambiamos el numero de registros a crear.
+Limpiando previamente los ya creados, de haberlos
+---------------------------------------------------------------------------------------
+Ahora si tenemos unos registros que queremos como semilla, lo podemos hacer modificando el archivo:
+
+database\seeds\UsersTableSeeder.php
+
+Y modificando la funcion run con el contenido de cada usuario así:
+
+User::create(["name" => "Luis Gabriel Hernandez", "email" => "luisga158@gmail.com", "password" => '$2y$10$w4rpOFcLuNHQd16ajLgTMOuHmwdsLRV9d4g5Flidi9dIL5YjY/v.W']);
+---------------------------------------------------------------------------------------
+Nota: Es necesario tener creado el modelo previamente para este caso se usa el comando:
+
+    php artisan make:model Post
+---------------------------------------------------------------------------------------
+Con el comando:
+php artisan make:factory PostFactory
+
+creamos el archivo:   database\factories\PostFactory.php  
+---------------------------------------------------------------------------------------
+Y el contenido queda así:
+---------------------------------------------------------------------------------------
+use App\Post;
+use Faker\Generator as Faker;
+
+$factory->define(Post::class, function (Faker $faker) {
+    return [
+        'title' => $faker->name,
+        'content' => $faker->text($maxNbChars = 50),
+        'user_id' => 1,
+    ];
+});
+---------------------------------------------------------------------------------------
+Ejecutamos el comando:
+
+php artisan make:seeder PostTableSeeder
+
+Luego vamos al archivo:         database\seeds\PostTableSeeder.php
+
+Y agregamos al inicio:
+                            use App\Post;
+                            
+Y en run x ej:
+                            factory(Post::class)->times(2)->create();
+---------------------------------------------------------------------------------------
+Vamos al archivo:           database\seeds\DatabaseSeeder.php
+
+Y añadimos en run           $this->call(PostTableSeeder::class);
+---------------------------------------------------------------------------------------
+Para hacerlo un poco más dinamico vamos a:     PostFactory.php
+
+Agregamos:
+                use App\User;
+                
+Y modificamos factory así:
+
+$factory->define(Post::class, function (Faker $faker) {
+    $count = User::count();
+    return [
+        'title' => $faker->name,
+        'content' => $faker->text($maxNbChars = 50),
+        'user_id' => $faker->numberBetween(1, $count)
+    ];
+});
+================================================================================
+4.16.- Eloquent
+================================================================================
+Primero entramos en la consola así:
+
+php artisan tinker
+
+Tenemos los siguientes metodos:
+
+User::all();            Muestra todos los registros de la tabla User.
+User::find(id);         Muestra los datos del id entregado.
+User::findOrFail(id);   Igual que el anterior pero arroja error de no existir el id
+User::where('id','=',1)
+User::where('id','=',1)->get()  Muestra usuario con id 1
+
+Cambiando datos de usuarios:
+
+$user = User::find(1)           Encuentra el usuario con id 1
+$user->name = 'Luis'
+$user->save()                   Guarda el nombre asignado
+
+$user->delete()                 Borra el usuario llamado con find
+
+
+User::count()           Devuelve el numero de usuarios
+---------------------------------------------------------------------------------------
+Primero que todo agregamos a User.php la siguiente funcion:
+
+    public function posts(){
+        return $this->hasMany('\App\Post');
+    }
+---------------------------------------------------------------------------------------
+Dentro del archivo web.php, con los códigos siguiente podemos ver la forma de obtener
+diversos datos usando comandos de Elocuent:
+---------------------------------------------------------------------------------------
+Route::resource('posts', 'PostController');
+
+/* La siguiente ruta muestra los datos:     http://127.0.0.1:8000/users */
+Route::get('/users',function(){
+    /*dd(\App\User::with(['posts'])->get()); *//* Devuelve la coleccion de posts de todos los usuarios */
+    /*dd(\App\User::with(['posts'])->first()); *//* Devuelve la coleccion de posts de para el primer usuario */
+    /*dd(\App\User::with(['posts'])->first()->posts->first()->id); *//* Devuelve el id del primer posts */
+    
+    /* Devuelve todos los posts con id 1 */
+    /*  $user = App\User::with(['posts'])->where('id', 1)->get();
+    dd($user);*/
+    
+    /* 
+    Devuelve todos los posts con id 1, y filtra por medio de la funcion query
+        $query->where('id', 1);
+    Podemos colocar tantos filtros como queramos añadiendo condiciones como la anterior
+    
+    En la query si el id del post, no corresponde al user con id 1, no devolvera ningun post
+    Podemos ver los id de los post del user con id 1 con los siguientes comandos:
+    
+    User::find(1)->posts
+    
+    De tal forma que podemos ver el id de un post que si pertenezca al user con id 1, cambiar el 
+    numero en la query y tendremos el post correspondiente.
+    */
+    $user = App\User::with(['posts' => function($query){
+        $query->where('id', 39);
+    }])->where('id', 1)->get();
+    dd($user);    
+});
+================================================================================
+4.17.- Relaciones entre modelos
+================================================================================
+Podemos crear relaciones:
+1:1
+1:muchos
+muchos:muchos
+---------------------------------------------------------------------------------------
+Por ej: Vamos al modelo User.php
+
+Y agregamos o modificamos de ya tenerla funcion:
+
+    public function posts(){
+        return $this->hasMany('\App\Post', 'user_id', 'id');
+    }
+
+Donde user_id es la llave foranea.
+Los argumentos user_id y id solo se especifican si no se ha seguido la convencion.
+---------------------------------------------------------------------------------------
+En tinker:
+$user = User::find(1)
+$user->post
+
+Lo cual nos muestra todos los post del user 1
+---------------------------------------------------------------------------------------
+Otro ej: Vamos al modelo Post.php
+
+Y agregamos las funciones:
+
+    public function user(){
+        return $this->belongsTo('App\User', 'id');
+    }
+    
+    public function comments(){
+        return $this->hasMany('App\User', 'id');
+    }
+---------------------------------------------------------------------------------------
+Otro ej: Vamos al modelo User.php    (role_user tabla intermedia, si tiene otro nombre , nombre)
+
+    public function userHasRoles(){
+        return $this->belongsToMany('App\Role', 'role_user', 'role_id', 'user_id');
+    }    
+---------------------------------------------------------------------------------------
+En tinker:
+$post = Post::find(1)
+---------------------------------------------------------------------------------------
+No logre hacer funcionar comments ver porque luego
+---------------------------------------------------------------------------------------
+En tinker:
+$c = Comment::find(1)
+$c->post
+================================================================================
+4.18.- Query Builder
+================================================================================
+Vamos al archivo:       web.php
+
+Y añadimos:
+
+use Illuminate\Support\Facades\DB;
+Route::get('/query', function(){
+    $users = DB::table('users');
+    
+    Otro metodo que podemos usar es:
+    
+    $users = DB::table('users')
+        ->join('posts', 'users.id', 'posts.user_id')
+        ->select('users.id', 'users.name', 'posts.title', 'posts.content')
+        ->get();
+    
+    dd($users);
+});
+
+Podemos ver el resultado en:            http://127.0.0.1:8000/query
+---------------------------------------------------------------------------------------
+Asi podemos observar que query builder es usado para una seleccion de datos,
+y elocuen para todo el modelo.
+---------------------------------------------------------------------------------------
+Aqui podemos ver todos los metodos para collecciones aplicables a Eloquent y a QueryBuilder
+
+https://laravel.com/docs/7.x/collections
+================================================================================
+5.19.- Controladores
+================================================================================
+Los controladores contienen acciones o metodos para entender la logica de una peticion
+
+El sitio para su almacenamiento es App\Http\Controllers
+
+Se crea un controlador con el siguiente comando:
+
+        php artisan make:controller PostController
+        
+Creando el archivo: App\Http\Controllers\PostController.php
+
+Añadimos el modelo con:     use App\Post;
+
+Y la funcion ( que retorna los titulos de los posts ):
+
+    public function index()
+    {
+        $posts = Post::all();
+        return view('post.index', compact("posts"));
+    }
+---------------------------------------------------------------------------------------
+Vamos a web.php y agregamos:
+
+Route::get('/post', 'PostController@index');
+---------------------------------------------------------------------------------------
+Creamos el archivo resources\views\post\index.php
+
+Con el contenido:
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Index posts pru</title>
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+</head>
+<body>
+    @foreach($posts as $post)
+    <p>{{ $post->title }}</p>
+    @endforeach
+</body>
+---------------------------------------------------------------------------------------
+Como en el anterior ejemplo podemos crear acciones en el controlador:
+        Para crear, editar, y eliminar.
+---------------------------------------------------------------------------------------
+Debido a su complejidad veremos los controladores rest.
+
+Eliminamos el archivo PostController, y lo creamos de nuevo con el siguiente comando:
+
+        php artisan make:controller PostController --resource
+---------------------------------------------------------------------------------------
+En el archivo web.php, podemos modificar por:    Route::get('posts', 'PostController');
+---------------------------------------------------------------------------------------        
+Lo cual crea los metodos (sin codigo) mas usados dentro de la clase que son:
+
+    index()                         Para listar los recursos
+    create()                        Para mostrar formulario para crear un nuevo registro
+    store(Request $request)         Para almacenar los datos del form create
+    show($id)                       Para ver un registro con un id especifico
+    edit($id)                       Para editar un registro con un id especifico
+    update(Request $request, $id)   Para actualizar o modificar un registro con un id especifico
+    destroy($id)                    Para borrar un registro con un id especifico
+---------------------------------------------------------------------------------------    
+Con el comando php artisan route:list
+Veremos las rutas disponibles
+---------------------------------------------------------------------------------------
+Para la funcion index vamos a usar el codigo ya visto
+
+Para la funcion show pondremos:
+
+        /*$post = Post::find($id);            Este busca el id*/
+        $post = Post::findOrFail($id);      Este igual pero si el id no existe devuelve error 404
+        return $post;
+
+Si damos esta ruta obtendremos el primer post:      http://127.0.0.1:8000/posts/1
+
+Donde 1 es el id del post, si el id no existe devuelve 404: http://127.0.0.1:8000/posts/4004
+---------------------------------------------------------------------------------------
+Nuevamente el archivo PostController, y lo creamos de nuevo con el siguiente comando:
+
+        php artisan make:controller PostController --resource --model=Post
+        
+La diferencia es que en lugar de id tenemos la variable post
+---------------------------------------------------------------------------------------
+En el archivo web.php, podemos modificar para permitir solo los metodos declarados
+en el array Only:
+
+Route::get('posts', 'PostController')->only([
+    'index','create'
+]);
+---------------------------------------------------------------------------------------
+Si queremos declarar que no use determinados metodos. Modificamos el archivo web.php.
+
+Route::get('posts', 'PostController')->except('create');
+================================================================================
+5.20.- Middlewares
+================================================================================
+Los Middlewares son metodos para aplicar a peticiones http.
+
+Como un puente entre la peticion y la accion del controlador.
+
+Para crear un middleware usamos el comando: 
+
+                    php artisan make:middleware Namemiddleware
+                    
+Ej: php artisan make:middleware Languaje
+---------------------------------------------------------------------------------------
+Nota: El comando presento error hasta que modifique web.php asi:
+
+                    Route::get('posts', 'PostController@index');
+---------------------------------------------------------------------------------------
+Con el comando anterior se crea el archivo app\http\Middleware\Languaje.php
+
+Lo usaremos para cambiar el lenguaje segun el navegador del usuario.
+
+Agrgamos:       use Illuminate\Support\Facades\App;
+
+Lo que refencia a:  config\app.php
+
+En handle agregamos:        dd($request->server('HTTP_ACCEPT_LANGUAJE'));
+---------------------------------------------------------------------------------------
+A continuacion registramos el middleware en:    app\Http\Kernel.php
+
+En $routeMiddleware, agregamos: 'language' => \App\Http\Middleware\Languaje::class,
+
+Y en $middleware, agregamos la ruta asi:
+---------------------------------------------------------------------------------------
+En Languaje.php agregamos:
+
+        $locale = substr($request->server('HTTP_ACCEPT_LANGUAGE'), 0, 2);
+        if ($locale != 'en' && $locale != 'es'){
+            $locale = 'en';
+        }
+        App::setLocale($locale);
+        
+Con lo anterior verifica el lenguaje y muestra segun el mismo.
+Para ver el efecto modifique en web.php, en la ruta / o raiz
+
+return view('welcome');   con;  return view('bienvenido');
+Ya que welcome, no tiene variables de lang.
+
+Vemos el resultado en: (cambiamos el idioma del navegador para probar y todo ok)
+http://127.0.0.1:8000/
+================================================================================
+5.21.- Objetos request y response
+================================================================================
+En post controler agregamos el parametro en index(Request $request)
+
+El siguiente codigo podemos ver formas de funcionamiento
+
+return $request->input('name','default');
+dd($request);
+
+En la ruta: ej: http://127.0.0.1:8000/posts or http://127.0.0.1:8000/posts?name=luisga
+
+Ejemplos citados en el video:
+Validacion de un patron en la ruta:
+
+$uri = $request->path();
+if ($request->is('admin/*')) {
+    //
+}
+---------------------------------------------------------------------------------------
+Ej. de response:
+
+        return response()->json([
+            'status' => 'succes'
+        ]);                                         // consulta json
+        
+        return response()->download($pathToFile);   // Descarga de archivos
+        
+        return response()->with('');        // enviar variables a cierta respuesta
+        
+        return redirect('/');                         // redireccion
+        
+        return redirect()->route('post.create');        // redireccion ruta especifica
+================================================================================
+6.22.- Formularios
+================================================================================
+Primero cabe destacar que Laravel nos permite usar packages como los de:
+
+https://laravelcollective.com/
+
+Para la creacion de formularios veamos:
+
+https://laravelcollective.com/docs/6.0/html
+---------------------------------------------------------------------------------------
+Pero lo vamos a hacer en HTML (seguimos trabajando en PostController):
+
+En create ponemos:      return view('post.create');
+
+Creamos el archivo resourcers\views\post\create.blade.php
+---------------------------------------------------------------------------------------
+Con el siguiente contenido
+
+@extends('layouts.app')
+
+@section('content')
+    <form action="{{ route('posts.store') }}" method="post">
+        @csrf
+        <div class="row justify-content-center">
+            <div class="col-sm-7">
+                <div class="form-group">
+                    <label for="title">Titulo</label>
+                    <input type="text" class="form-control" name="title" id="title" placeholder="Titulo">
+                </div>
+                <div class="form-group">
+                    <label for="content">Contenido</label>
+                    <textarea class="form-control" name="control" cols="30" rows="10"></textarea>
+                </div>
+            </div>
+            
+            <div class="col-sm-7 text-center">
+                <button class="btn btn-primary btn-block" type="submit">Enviar</button>
+            </div>
+        </div>
+    </form>
+@endsection
+---------------------------------------------------------------------------------------
+En la ruta:         http://127.0.0.1:8000/posts/create
+veremos el formulario
+---------------------------------------------------------------------------------------
+Ponemos en la funcion store:
+
+dd($request->all());
+---------------------------------------------------------------------------------------
+Para que el servidor reconozca la peticion como valida necesita un token,
+que sirve para proteccion, y dicho token se pasa con la linea:
+
+@csrf
+---------------------------------------------------------------------------------------
+Si vamos al formulario y le damos enviar sin el token saldrá error.
+Si ya tiene el Token entonces:  Nos mostrara la informacion a almacenar.
+---------------------------------------------------------------------------------------
+Modificando la function store asi:
+
+        $post = new Post();
+        $post->title = $request->input('title');
+        $post->content = $request->input('content');
+        $post->user_id = 1;
+        $post->save();
+        return redirect()
+            ->route('posts.show', ['post' => $post])
+            ->with('message', 'Post Creado.');
+================================================================================
+6.23.- Validacion de Formularios
+================================================================================
+Primero importamos la clase validator asi:      use Validator;
+
+Despues al inicio de la funcion store agragamos:
+        
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|min:5|max:10',
+            'content' => 'required|min:5|max:100',
+        ]);
+        
+        if ($validator->fails()){
+            return redirect()->route('posts.create')
+                ->withErrors($validator);
+        }
+---------------------------------------------------------------------------------------
+Vamos a la vista create.blade.php
+Y agregamos al inicio de @section('content') lo siguiente:
+
+    @if($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+    
+Con esto ya nos muestra los errores.
+---------------------------------------------------------------------------------------
+Sin embargo nos borra los datos que se hayan puesto en el formulario, para evitar esto,
+modificamos en la funcion store así:
+
+        if ($validator->fails()){
+            return redirect()->route('posts.create')
+                ->withErrors($validator);
+                ->withInput();
+        }
+---------------------------------------------------------------------------------------
+Luego en create.blade.php agregamos en los input 
+
+        value="{{ old('title') }}"
+        y en textarea {{ old('control') }}
+        
+Quedando así:
+
+<input type="text" class="form-control" name="title" id="title" placeholder="Titulo" value="{{ old('title') }}">
+
+<textarea class="form-control" name="control" cols="30" rows="10">{{ old('control') }}</textarea>
+---------------------------------------------------------------------------------------
+Dichas validaciones pueden llegar a ser muy extensas, por lo que se delegan a otros
+archivos, para lo cual Laravel cuenta con los:
+
+form request, que son clases customizadas que contienen la logica de validación.
+
+Dichos archivos se crean desde la consola con el siguiente comando:
+
+                    php artisan make:request PostFormRequest
+                    
+Creando la carpeta app\Http\Request\ y el archivo PostFormRequest.php
+
+Vamos al archivo y de momento vamos a poner en la funcion authorize:    return true;
+
+Y en la funcion rules el código:
+
+        return [
+            'title' => 'required|min:5|max:10',
+            'content' => 'required|min:5|max:100',
+        ];
+---------------------------------------------------------------------------------------        
+En PostController.php elimino el siguiente código:
+
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|min:5|max:10',
+            'content' => 'required|min:5|max:100',
+        ]);
+        
+        if ($validator->fails()){
+            return redirect()->route('posts.create')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+Luego importamos la clase creada así:       use App\Http\Requests\PostFormRequest
+
+Para terminar inyectamos la dependencia o clase en el metodo store así:
+
+                public function store(PostFormRequest $request)
+---------------------------------------------------------------------------------------
+Si queremos personalizar o customizar los mensages vamos a PostFormRequest,
+y agregamos el siguiente codigo despues de rules:
+
+    public function messages(){
+        return[
+            'title.required' => 'El titulo es requerido',
+            'title.min' => 'El titulo debe tener al menos 5 carateres',
+            'title.max' => 'El titulo no debe tener mas de 10 carateres',
+            'content.required' => 'El contenido es requerido',
+            'content.min' => 'El contenido debe tener al menos 5 carateres',
+            'content.max' => 'El contenido no debe tener mas de 100 carateres',
+        ];
+    }
+
+Con esto nuestros mensages quedan perzonalizados.
+================================================================================
+7.24.- Service Container
+================================================================================
+El Service Container o Contenedor de Servicios es el core o nucleo, de casi
+cualquier caracteristicas en laravel, resolviendo e instanciando al contenedor
+por medio de una clase.
+El Service Provider es donde se registan los Service Container.
+
+En la carpeta app\Providers, por defecto Laravel crea el archivo AppServiceProvider.
+Es allí donde se registran las clases en el contenedor o Service Containers.
+---------------------------------------------------------------------------------------
+En el siguiente ejemplo vamos a suponer que necesitamos x servicios de paypal.
+
+1.- Vamos a .env y declaramos las variables:
+
+PAYPAL_ID=DSAFGTENNNN
+PAYPAL_SECRET=23094asdfkjlkjvhjklh
+
+Luego creamos app\Models\Paypal.php con el siguiente contenido:
+---------------------------------------------------------------------------------------
+<?php
+
+namespace App\Models;
+
+class Paypal
+{
+    private $id;
+    private $secret;
+    
+    public function __construct($id, $secret){
+        $this->id = $id;
+        $this->secret = $secret;
+    }
+    
+    public function doSomething(){
+        return "Something";
+    }
+}
+---------------------------------------------------------------------------------------
+Tenemos dos formas de registro de servicios en el contenedor:
+
+bindings y singletones.
+
+Vamos a AppServiceProvider y en la funcion register ponemos el codigo:
+
+        $this->app->singleton(Connection::class, function ($app) {
+            return new Connection(config('riak'));
+        });
+        
+Importamos nuestra clase:           use App\Models\Paypal;
+
+Y remplazamos:  Connection x Paypal
+
+Quedando el codigo así:
+
+        $this->app->bind(Paypal::class, function ($app) {
+            return new Paypal(env('PAYPAL_ID'), env('PAYPAL_SECRET'));
+        });
+---------------------------------------------------------------------------------------
+Hecho esto podemos usarlo en cualquier parte, como ejemplo vamos a web.php
+Y ponemos el codigo:
+
+Route::get('/paypal', function(){
+    $paypal = resolve('App\Models\Paypal');
+    return $paypal->doSonmething();
+});
+
+Asi pues en la ruta:            http://127.0.0.1:8000/paypal
+---------------------------------------------------------------------------------------
+Una vez registrada nuestra clase podemos usarla en un metodo o en un contructor.
+
+Por ejemplo modificando el codigo anterior por:
+
+Route::get('/paypal', function(App\Models\Paypal $paypal){
+    return $paypal->doSomething();
+});
+---------------------------------------------------------------------------------------
+Esto es muy importante ya que gran parte de las caracteristicas de Laravel se basan en
+el service container.
+================================================================================
+7.25.- Facades
+================================================================================
+Son una interface entre la clase y el contenedor de Laravel.
+
+Creamos la carpeta app\Facades, y dentro el archivo PaymentFacade.php
+Con el siguiente contenido:
+---------------------------------------------------------------------------------------
+<?php
+
+namespace App\Facades;
+
+use Illuminate\Support\Facades\Facade;
+
+class PaymentFacade extens Facade{
+    protected static function getFacadeAccessor(){ return 'App\Models\Paypal'; }
+}
+---------------------------------------------------------------------------------------
+A continuacion en config\app.php definimos el proveedor en caso de crearlo.
+Para lo cual usamos el comando:
+
+php artisan make:provider PaymentProvider
+
+Generando el archivo:       app\Providers\PaymentProvider.php
+
+En el cual importamos nuestra clase:        use App\Models\Paypal;
+
+Y en la funcion register ponemos el codigo:
+
+        $this->app->bind(Paypal::class, function ($app) {
+            return new Paypal(env('PAYPAL_ID'), env('PAYPAL_SECRET'));
+        });
+        
+Luego lo registramos en app.php agregando en el array providers el siguiente codigo:
+
+App\Providers\PaymentProvider::class,
+
+Ademas en el array aliases escribimos el siguiente codigo:
+
+'Payment' => App\Facades\PaymentFacade::class,
+---------------------------------------------------------------------------------------
+Luego en web.php cambiamnos la ruta paypal por el siguiente código:
+
+Route::get('/paypal', function(){
+    return Payment::doSomething();
+});
+
+Si modificamos la funcion doSomething en App\Models\Paypal.php x ej x:
+
+return "Pago realizado";
+
+Veremos el cambio.
+
+---------------------------------------------------------------------------------------
+En la documentacion de Facade, podemos ver que tenemos muchos metodos disponibles:
+
+https://laravel.com/docs/7.x/facades#facade-class-reference
+---------------------------------------------------------------------------------------
+Viene la pregunta cuando usar Facades y cuando usar Helpers?
+
+Lo cual depende de gustos, sin embargo aqui solo vemos un ejemplo.
+Es necesario mas desarrollo para ver cual nos facilita mas lo que deseamos.
+Asi como cual requiere menos codigo.
+================================================================================
+8.26.- Autenticación en Laravel
+================================================================================
+En Laravel la autenticacion viene por defecto.
+El comando que genera todos los contrladores, vistas y configuracion es:
+
+php artisan make:auth
+
+Que es un comando en desuso ahora es:
+
+php artisan ui:auth
+
+Y que se crea al mismo tiempo que un proyecto nuevo con el comando:
+
+laravel new blog --auth
+---------------------------------------------------------------------------------------
+Con esto vemos en el archivo web.php el siguiente comando:
+
+Auth::routes();
+
+Tambien en la carpeta app\Http\Controllers\Auth
+
+Vemos creados los archivos para:
+
+confirmar pass
+olvide pass
+login control
+regitro control
+resert pass
+verify control
+
+Tambien en la carpeta resources\views\auth
+Tendremos los archivos login, register y verify.
+================================================================================
+8.27.- Confirmación email
+================================================================================
+Lo primero a hacer es modificar la clase User asi:
+
+class User extends Authenticatable implements MustVerifyEmail
+
+Luego en web.php modificamos asi:
+
+Auth::routes(['verify' => true]);
+
+Route::group(['middleware' => 'verified'], function(){
+    Route::get('/home', 'HomeController@index')->name('home');
+    Route::resource('posts', 'PostController')
+})
+---------------------------------------------------------------------------------------
+Nos registramos en:      http://mailtrap.io/
+
+Y en el archivo .env modificamos las variables de entorno a las nuestras asi:
+
+.... 
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+etc ....
+
+En mi caso por:
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=4df51a0a1f967e
+MAIL_PASSWORD=aaae23dade4fb4
+MAIL_ENCRYPTION=tls
+
+Hay que tener en cuenta que estas variables las vemos en http://mailtrap.io/
+
+Y que seran diferentes segun el servidor u otras posibilidades de envio.
+================================================================================
+9.28.- Vista para errores
+================================================================================
+Para definir nuestras propias vistas de los errores, creamos la carpeta:
+
+resources\views\errors
+
+Y en ella los archivos para los errores con la convencion:
+
+#error.blade.php
+
+Para definier la vista del error 404, creariamos el archivo:
+
+resources\views\errors\404.blade.php
+---------------------------------------------------------------------------------------
+El cual en mi caso tiene el siguiente contenido:
+---------------------------------------------------------------------------------------
+@extends('bienvenido')
+@section('mainttl')
+@endsection
+@section('content')
+<h1><br><center>"Error 404"</center></h1>
+@endsection
+@section('sidebar')
+@endsection
+---------------------------------------------------------------------------------------
+Para probar la vista de error 404 basta con ir a una vista inexistente ej:
+
+http://127.0.0.1:8000/1234
+---------------------------------------------------------------------------------------
+De forma tal que para crear otro error basta con guardar como y cambiar el numero de error.
+---------------------------------------------------------------------------------------
+Para el error 505 modificamos la ruta raiz en web.php asi:
+---------------------------------------------------------------------------------------
+        return view('welcome');
+con:    return view('wellcome');
+---------------------------------------------------------------------------------------
+Y en el archivo .env
+---------------------------------------------------------------------------------------
+APP_DEBUG=true
+
+con
+
+APP_DEBUG=false
+=======================================================================================
+9.- Notas de cambios, mejoras y definicion de ciertos codigos relevantes
+=======================================================================================
+En el video inicia mostrando el index de los Posts, pero la vista no era ni
+parecida, así que primero la mejoré, cambiando el codigo del archivo:
+---------------------------------------------------------------------------------------
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+I.- Cambio
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+---------------------------------------------------------------------------------------
+resources\views\post\index.blade.php
+---------------------------------------------------------------------------------------
+@extends('bienvenido')
+@section('title',"Indice de Posts")
+@section('mainttl')
+@endsection
+@section('content')
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+    @foreach($posts as $post)
+    <div class="card">
+        <div class="card-header">{{ $post->title }}</div>
+        <div class="card-body">{{ $post->content }}</div>
+    </div><br>
+    @endforeach
+            </div>
+        </div>
+    </div>
+@endsection
+@section('sidebar')
+@endsection
+---------------------------------------------------------------------------------------
+Cabe notar que tuve que arreglar la vista bienvenido, ya que no funcionaba debidamente.
+Mdificando previamente con el siguiente codigo el archivo:
+---------------------------------------------------------------------------------------
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+II.- Cambio y Mejora de plantilla base
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+---------------------------------------------------------------------------------------
+resources\views\bienvenido.blade.php
+---------------------------------------------------------------------------------------
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <title>@yield('title')</title>
+
+    <!-- Scripts -->
+    <script src="{{ asset('js/app.js') }}" defer></script>
+
+    <!-- Fonts -->
+    <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
+
+    <!-- Styles -->
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+</head>
+<body>
+    @include('_nav')
+    <div class="container">
+    @section('mainttl')
+    <h1>@lang('main.title')</h1>
+    @show
+    <br>    
+    @yield('content')
+    @section('sidebar')
+        <h3>Sidebar</h3>
+    @show
+    </div><br>
+</body>
+-----------------------------------------------------------------------------------------------------
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+III.- Definicion de terminos importantes (@extends, @yield, @section y @lang)
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+-----------------------------------------------------------------------------------------------------
+Podemos usar una o multiples plantillas base en Laravel, solo iniciamos el archivo.blade.php con:
+
+@extends('bienvenido')
+-----------------------------------------------------------------------------------------------------
+En la plantilla base (bienvenido.blade.php) observamos en la head el title de la sgte. forma:
+
+<title>@yield('title')</title>
+-----------------------------------------------------------------------------------------------------
+Esto nos permite cambiar el title en una nueva vista usando simplemente:
+
+@section('title',"Indice de Posts")
+-----------------------------------------------------------------------------------------------------
+Igualmente en las plantillas podemos definir una seccion modificable asi:
+
+@yield('seccion_o_campo_name')
+
+Y luego modificarla con el codigo:
+
+@section('seccion_o_campo_name',"Nombre que queremos para la vista actual")
+-----------------------------------------------------------------------------------------------------
+Para el inicio del body hemos creado el archivo:
+
+resources\views\_nav.blade.php
+
+Que contiene la vista de la barra de navegación, la cual se incluye en la plantilla para vistas al
+inicio del body, que para el caso es bienvenido.blade.php, con el sgte. codigo.
+
+@include('_nav')
+-----------------------------------------------------------------------------------------------------
+Vemos tambien una seccion que por medio de @lang('main.title') ajusta el contenido de la seccion,
+de acuerdo al idioma predeterminado del navegador con el contenido en los archivos main.php,
+que deben crearse y definir las etiquetas en las carpetas segun el idioma para su uso.
+En resources\lang.
+
+Con la implementacion de un middleware podemos indicarle el idioma por defecto de no estar definido.
+En nuestro caso el middleware es:
+
+app\Http\Middleware\Languaje.php
+
+    @section('mainttl')
+    <h1>@lang('main.title')</h1>
+    @show
+    
+En caso de no necesitar dicho contenido en la vista nueva colocamos:
+
+    @section('mainttl')
+    @endsection
+    
+Si queremos cambiar su contenido, colocamos el contenido entre los identificadores de seccion.
+-----------------------------------------------------------------------------------------------------
+Tenemos tambien en la plantilla base el siguiente codigo:           @yield('content')
+
+Que indica el lugar del contenido o la seccion content.
+
+El cual se invoca en las vistas para identificar su inicio con:     @section('content')
+
+Entre estos dos comandos colocamos el contenido de nuestra vista.
+
+Y para identificar su final con:                                    @endsection
+-----------------------------------------------------------------------------------------------------
+Tambien tenemos una seccion sidebar, que por defecto solo trae un texto Sidebar de momento.
+De no quererla colocamos el siguiente codigo:
+
+@section('sidebar')
+@endsection
+
+Si queremos cambiar su contenido, colocamos el contenido entre los identificadores de seccion.
+
+Y si queremos agregar contenido adicional en la linea sgte. al inicio de seccion colocamos:
+
+@parent
+
+Y a continuacion el contenido adicional.
+-----------------------------------------------------------------------------------------------------
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+IV.- El archivo resources\views\_nav.blade.php
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+-----------------------------------------------------------------------------------------------------
+Como vimos en el punto anterior, es usado por la plantilla base bienvenido.
+
+Y su contenido es:
+-----------------------------------------------------------------------------------------------------
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url('/home') }}">
+            @lang('main.titlepg')
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <!-- Left Side Of Navbar -->
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item"><a href="{{ route('posts.index') }}">Posts</a></li>
+            </ul>
+
+            <!-- Right Side Of Navbar -->
+            <ul class="navbar-nav ml-auto">
+                <!-- Authentication Links -->
+                @guest
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('login') }}">{{ __('Ingresar') }}</a>
+                </li>
+                @if (Route::has('register'))
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('register') }}">{{ __('Registrarse') }}</a>
+                </li>
+                @endif
+                @else
+                <li class="nav-item dropdown">
+                    <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                        {{ Auth::user()->name }} <span class="caret"></span>
+                    </a>
+
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
+                                                     document.getElementById('logout-form').submit();">
+                            {{ __('Cerrar sesion') }}
+                        </a>
+
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                            @csrf
+                        </form>
+                    </div>
+                </li>
+                @endguest
+            </ul>
+        </div>
+    </div>
+</nav>
+=====================================================================================================
+9.29.- Paginación
+=====================================================================================================
+Para el ejemplo usaremos la ruta:           http://127.0.0.1:8000/posts
+El cual esta registrado en web.php asi:     Route::resource('posts', 'PostController');
+
+El archivo que contiene la Clase que se encarga de administrar las vistas y acciones, 
+por medio de metodos o funciones es:
+
+app\Http\Controllers\PostController.php
+
+Modificamos en f. index la linea:       $posts = Post::all();
+Por:                                    $posts = Post::paginate(10);
+
+Con esto nos muestra los 10 primero post, para que muestre la paginacion modificamos la vista.
+-----------------------------------------------------------------------------------------------------
+Las vistas las hemos almacenado en:     resources\views\post
+
+Vamos a la vista index.blade.php
+
+Y agregamos antes del inicio y/o final de la seccion el codigo:        {{ $posts->links() }}
+
+En mi caso la vista tiene un div class container, por lo que el codigo lo coloco,
+Despues del div inicial (para que muestre la paginacion al inicio).
+Y Antes de cierre del mismo div (para que muestre la paginacion al final).
+-----------------------------------------------------------------------------------------------------
+Para crear un link a posts:
+Dentro de la plantilla _nav.blade.php
+
+Dentro del codigo:
+
+            <!-- Left Side Of Navbar -->
+            <ul class="navbar-nav mr-auto">
+Agrego:         <li class="nav-item"><a href="{{ route('posts.index') }}">Posts</a></li>
+            </ul>
+=====================================================================================================
+9.30.- Mostrar Post
+=====================================================================================================
+Para mostar un unico Post, modificamos la funcion show en el archivo:
+
+app\Http\Controllers\PostController.php
+Asi:
+        return view('post.show', compact("post"));
+
+Definimos la vista:         resources\views\post\show.blade.php
+Con el siguiente contenido.
+-----------------------------------------------------------------------------------------------------
+@extends('bienvenido')
+@section('title',"Ver Publicacion o Post")
+@section('mainttl')
+@endsection
+@section('content')
+    @if(Session::has('message'))
+        <div class="container alert alert-success">
+            {{ Session::get('message') }}
+        </div>
+    @endif
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ $post->title }}</h5>
+                    <div class="card-text">{{ $post->content }}</div>
+                </div>
+            </div><br>
+        </div>
+    </div>
+</div>
+@endsection
+@section('sidebar')
+@endsection
+-----------------------------------------------------------------------------------------------------
+Luego en el index de los posts añado al final del div card, antes del cierre el codigo:
+
+<a href="{{ route('post.show',['post' => $post]) }}" class="btn btn-primary">Ver mas...</a>
+=====================================================================================================
+9.31.- Actualizar Post
+=====================================================================================================
+A continuacion agregamos el codigo sgte.:
+
+                    <a href="{{ route('posts.edit',['post' => $post]) }}" class="btn btn-primary">Editar</a>
+                    <form action=" {{ route('posts.destroy',['post' => $post]) }} " method="post">
+                        @method('DELETE')
+                        @csrf
+                        <button class="btn btn-danger ml-2">Eliminar</button>
+                    </form>
+                    
+En PostController en la funcion edit agregamos el codigo:
+
+                    return view('post.edit', compact("post"));
+                    
+Y creamos la vista edit para post con el codigo sgte.:
+Es muy similar al de create, copiar y modificar.
+-----------------------------------------------------------------------------------------------------
+@extends('layouts.app')
+
+@section('content')
+
+    @if(Session::has('message'))
+        <div class="container alert alert-success">
+            {{ Session::get('message') }}
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form action="{{ route('posts.update',['post' => $post]) }}" method="post">
+        @PUT
+        @csrf
+        <div class="row justify-content-center">
+            <div class="col-sm-7">
+                <div class="form-group">
+                    <label for="title">Titulo</label>
+                    <input type="text" class="form-control" name="title" id="title" placeholder="Titulo" value="{{ $post->title }}">
+                </div>
+                <div class="form-group">
+                    <label for="contentlbl">Contenido</label>
+                    <textarea class="form-control" name="content" cols="30" rows="10">{{ $post->content }}</textarea>
+                </div>
+            </div>
+            
+            <div class="col-sm-7 text-center">
+                <button class="btn btn-primary btn-block" type="submit">Enviar</button>
+            </div>
+        </div>
+    </form>
+@endsection
+-----------------------------------------------------------------------------------------------------
+En PostController update colocamos el PostFormRequest $request.
+
+Y colocamos el codigo:
+
+        $post->title = $request->input('title');
+        $post->content = $request->input('content');
+        $post->save();
+        return redirect()->route('posts.edit', ['post' => $post]);
+
+-----------------------------------------------------------------------------------------------------
+Para mensaje en caso de error
+-----------------------------------------------------------------------------------------------------
+En la vista edit antes del if errors agrego el codigo:
+
+    @if(Session::has('message'))
+        <div class="container alert alert-success">
+            {{ Session::get('message') }}
+        </div>
+    @endif
+-----------------------------------------------------------------------------------------------------
+Luego en PostController.update:     Modifico return redirect() asi:
+
+    return redirect()
+        ->route('posts.edit', ['post' => $post])
+        ->with('message', 'Post Actualizado.');
+-----------------------------------------------------------------------------------------------------        
+Por ultimo para que el metodo store tome el id del usuario, modificamos asi:
+    
+    $post->user_id = $request->user()->id;
+=====================================================================================================
+9.32.- Eliminar Post
+=====================================================================================================
+Vamos al metodo destroy de PostController y agregamos el siguiente codigo:
+
+        $post->delete();
+        return redirect()
+            ->route('posts.index', ['post' => $post])
+            ->with('message', 'Post Eliminado.');
+-----------------------------------------------------------------------------------------------------
+Para el mensaje en la vista index.blade.php.
+Agregamos despues de @content:
+
+    @if(Session::has('message'))
+        <div class="container alert alert-success">
+            {{ Session::get('message') }}
+        </div>
+    @endif
+    
+Y para la acción de borrar despues del codigo del boton ver lo sgte.:
+
+                    <form action=" {{ route('posts.destroy',['post' => $post]) }} " method="post">
+                        @method('DELETE')
+                        @csrf
+                        <button class="btn btn-danger ml-2">Eliminar</button>
+                    </form>
+=====================================================================================================
+9.33.- Limitando acciones sobre Posts para usuarios
+=====================================================================================================
+Vamos a nav y agregamos Mis Post con el codigo:
+
+<li class="nav-item ml-2"><a href="{{ route('posts.my') }}">Mis Posts</a></li>
+-----------------------------------------------------------------------------------------------------
+En PostController agregamos el metodo myPost:
+
+    public function myPost(Post $post)
+    {
+        $idlcluser = $request->user()->id;
+        $allposts = Post::all();
+        $posts = $allposts->where('user_id', $idlcluser);
+        return view('post.my', compact("posts"));
+    }
+-----------------------------------------------------------------------------------------------------
+Creamos la vista:                   my.blade.php
+
+Copiandola de index pero eliminando las lineas:     {{ $posts->links() }}
+-----------------------------------------------------------------------------------------------------
+Y en la vista index eliminamos los botones editar y eliminar, de forma que solo quedarian
+disponibles para los post del usuario actual.
+-----------------------------------------------------------------------------------------------------
+Por ultimo registramos la ruta en web.php:
+
+Para este caso estoy registrando las rutas dentro de:
+
+Route::group(['middleware' => 'verified'], function(){
+    Route::get('/home', 'HomeController@index')->name('home');
+    Route::resource('/post', 'PostController');
+    Route::get('/mypost', 'PostController@myPost')->name('posts.my');
+});
+
+=====================================================================================================
+10.34.- Politicas en Laravel
+=====================================================================================================
+Creamos el archivo de politicas con el comando:    php artisan make:policy PostPolicy
+
+O le damos el modelo para que cree metodos con el comando:
+
+                                        php artisan make:policy PostPolicy --model=Post
+
+El archivo creado es:   App\Policies\PostPolicy.php
+-----------------------------------------------------------------------------------------------------
+Vamos al archivo:                       App\Providers\AppServiceProvider.php
+
+Y agregamos antes de class las linea:   use App\Policies\PostPolicy;
+Y para el modelo:                       use App\Post;
+
+Con el siguiente codigo registramos la clase que creamos, 
+en el array que contiene el mapa de las politicas de la aplicacion:
+
+    protected $policies = [
+        Post::class => PostPolicy:class,
+    ]
+-----------------------------------------------------------------------------------------------------
+Para definir la logica dentro de nuestros metodos vamos a:      PostPolicy.php
+
+En el metodo delete ponemos el sgte. codigo:                    return $user->id == $post->user_id;
+
+Con esto se evalua si el usuario es el creador del archivo y puede borrarlo.
+
+En el archivo:          App\Http\Controllers\PostController.php
+
+En el metodo destroy agregamos al inicio el codigo:
+
+        if (Auth::user()->cant('delete', $post)) {
+            return redirect()
+            ->route('posts.my', ['post' => $post])
+            ->with('message', 'No tiene permisos para eliminar esta publicacion.');
+        }
+-----------------------------------------------------------------------------------------------------        
+Otra manera en lugar del codigo anterio es con (Lo que entregara el error 403 This action is unauthorized.):
+
+        $this->authorize('delete', $post);
+        
+Podemos crear una vista para el error y listo.
+-----------------------------------------------------------------------------------------------------
+Igualmente podemos hacer para el metodo update asi:
+
+En PostPolicy.php en el metodo update ponemos el sgte. codigo:  return $user->id == $post->user_id;
+
+Y En el archivo:          App\Http\Controllers\PostController.php
+
+En el metodo update agregamos al inicio el codigo:
+
+        if (Auth::user()->cant('update', $post)) {
+            return redirect()
+            ->route('posts.my', ['post' => $post])
+            ->with('message', 'No tiene permisos para modificar esta publicacion.');
+        }
+-----------------------------------------------------------------------------------------------------
+Una manera de limitar la vista de los post a los creados por el usuario es:
+
+Ir a PostPolicy.php. Y en el metodo view ponemos el sgte. codigo:   return $user->id == $post->user_id;
+
+Y en la vista index, despues de @foreach agregamos:     @can('view', $post)
+Y antes del @endforeach:                                @endcan
+=====================================================================================================
+10.35.- Gates
+=====================================================================================================
+Hay dos formas de comprobar la autorizacion que son:        Gates y Policies.
+
+Gates valida la autorizacion.
+-----------------------------------------------------------------------------------------------------
+El problema de seguridad que teniamos es el siguiente:
+
+Al poner el mouse sobre cualquier post podemos ver el id del post. x ej 5, uno que no es mio.
+
+Voy a mis post y doy click derecho en el boton Eliminar inspeccionar y cambio el id del form x 5.
+Con el sistema auterior implementado ya no lo deja eliminar.
+-----------------------------------------------------------------------------------------------------
+Podemos usar gates para hacer lo mismo asi:
+
+Vamos a:        AuthServiceProvider
+
+En el array $policies queda:            'App\Model' => 'App\Policies\ModelPolicy',
+
+Creamos la funcion:
+
+    public function deleteAction(){
+        Gate::define('delete-post', function($user, $post){
+            return $user->id == $post->user_id;
+        });
+    }
+    
+Y la registramos en la funcion boot:             $this->deleteAction();
+
+Luego vamos a:      PostController e importamos con:    use Illuminate\Support\Facades\Gate;
+
+Y en la funcion destroy en lugar el codigo de aut usamos el sgte. codigo:
+
+        if (Gate::denies('delete-post', $post)){
+            return redirect()->back();
+        }
+
+Otra opcion es:
+
+        if (!Gate::allows('delete-post', $post)){
+            return redirect()->back();
+        }
+        
+Otra seria:
+
+        $user = Auth::user();
+        if (!Gate::forUser($user)->allows('delete-post', $post)){
+            return redirect()->back();
+        }
+        
+Otra seria:
+
+        $user = Auth::user();
+        if (Gate::forUser($user)->denies('delete-post', $post)){
+            return redirect()->back();
+        }
+=====================================================================================================
+Para el siguiente tutorial hay que tener en cuenta que se basa en vagrant,
+homesade y una maquina virtual que debe estar previamente instalada.
+En mi caso aun no he podido probarlo bien.
+Pero en la documentacion de Laravel aparecen otros sistemas basados en otras plataformas como Dusk...
+=====================================================================================================
+11.36.- Configuración entorno para testing
+=====================================================================================================
+Vamos al archivo:       phpunit.xml
+
+En la seccion php definimos la base de datos para pruebas asi:
+
+        <server name="DB_DATABASE" value="laraveltest"/>
+        
+Sin embargo puede que por la version, en mi archivo aparecen definidas esa y otras variables.
+
+        <server name="DB_CONNECTION" value="sqlite"/>
+        <server name="DB_DATABASE" value=":memory:"/>
+        
+        <server name="TELESCOPE_ENABLED" value="false"/>
+-----------------------------------------------------------------------------------------------------
+Así que lo pondre como en el tutorial, luego creamos nuestra basa de datos.
+
+En:     tests\Feature\ExampleTest.php
+
+Podemos agregar funciones siguiendo una convencion, los metodos inician con la palabra 'test'
+
+o creamos la siguiente funcion:
+
+    /**
+     *
+     * @test
+     */
+    public function assert_true(){
+        $this->assertTrue(true);
+    }
+    
+Para probar los test ejecutamos el comando:       vendor\bin\phpunit
+
+En:     tests\Feature\ExampleTest.php
+
+Esta incluida una clase que hace un rollback y luego hace la migracion en cada una de nuestras pruebas.
+
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+Para poder usarlo despues del corchete inicial de la clase agregamos:       use RefreshDatabase;
+
+=====================================================================================================
+11.37 Pruebas unitarias
+=====================================================================================================
+Primero creamos nuestro test con el comando:                php artisan make:test UserTest
+
+Creara en la carpeta el archivo:                            tests\Feature\UserTest.php
+
+llamamos al modelo con:                             use User;
+
+Al inicio de la clase incluimos:                    use RefreshDatabase;
+
+Y creamos un metodo para probar por ejemplo:
+-----------------------------------------------------------------------------------------------------
+    public function adds_users()
+    {
+        $this->assertEquals(0, User::count());
+        factory(User::class)->create();
+        $this->assertEquals(0, User::count());
+    }
+-----------------------------------------------------------------------------------------------------    
+Ejecutamos el comando para probar los tests:            vendor\bin\phpunit
+
+Si queremos hacer un test especifico usamos ej:         vendor\bin\phpunit --filter UserTest
+-----------------------------------------------------------------------------------------------------
+PHP tiene muchos metodos assert, podemos consultarlos en la documentacion:
+
+        https://phpunit.readthedocs.io/en/9.3/assertions.html
+=====================================================================================================
+11.38 Pruebas a la interfaz
+=====================================================================================================
+En este tutorial se usara:      https://github.com/laravel/browser-kit-testing
+
+Que instalamos con el comando:  composer require laravel/browser-kit-testing --dev
+
+Vamos a tests\TestCase.php y modificamos la dependencia x:
+
+use Laravel\BrowserKitTesting\TestCase as BaseTestCase;
+-----------------------------------------------------------------------------------------------------
+En el archivo UserTest.php
+
+Para encryptar las contraseñas implementamos:       use Illuminate\Support\Facades\Hash
+-----------------------------------------------------------------------------------------------------
+Para evitar la repetidera:
+
+Creamos el archivo tests\utilities\functions.php
+-----------------------------------------------------------------------------------------------------
+<?php
+
+function create($class, $attr = []){
+    return factory($class)->create($attr);
+}
+-----------------------------------------------------------------------------------------------------
+En el archivo composer.json, en la seccion autoload-dev, agrego
+        -------------------------------------------
+        },
+        "files": ["tests/utilities/functions.php"]
+        -------------------------------------------
+Luego ejecuto: composer dump-autoload
+-----------------------------------------------------------------------------------------------------
+Quedando UserTest.php con el sgte. codigo:
+-----------------------------------------------------------------------------------------------------
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Hash;
+use App\User;
+
+class UserTest extends TestCase
+{
+    use RefreshDatabase;
+    /**
+     * @test
+     */
+    public function adds_users()
+    {
+        $this->assertEquals(0, User::count());
+        create('App\User');
+        $this->assertEquals(1, User::count());
+    }
+    public function login()
+    {
+        $user = create('App\User', [
+            'password' => Hash::make('passwdtest')
+        ]);
+        $this->visit('/login')
+            ->type($user->email, 'email')
+            ->type('passwdtest', 'password')
+            ->press('Ingresar')
+            ->seePageIs('/home');
+    }
+    public function loginfail()
+    {
+        $user = create('App\User', [
+            'password' => Hash::make('passwdtest')
+        ]);
+        $this->visit('/login')
+            ->type($user->email, 'email')
+            ->type('passwdtest', 'password')
+            ->press('Ingresar')
+            ->seePageIs('/login')
+            ->see('Datos no encontrados en nuestros registros.');
+    }
+    public function register(){
+        $this->assertEquals(0, User::count());
+        
+        $data = [
+            'name' => 'Test name',
+            'email' => 'test@test.com',
+            'password' => 'passwdtest'
+        ];
+        $this->visit('/register')
+            ->type($data['name'], 'Test name')
+            ->type($data['email'], 'test@test.com')
+            ->type($data['password'],'password')
+            ->type($data['password'], 'password_confirmation')
+            ->press('Registrar')
+            ->seePageIs('/login');
+        
+        $this->assertEquals(1, User::count());
+        $user = User::find(1);
+        $this->assertEquals($data['name'], $user->name);
+    }
+}
+=====================================================================================================
+11.39 Pruebas unitarias 2
+=====================================================================================================
+Como no me funcionan las pruebas o tests.
+Tal vez por no usar el mismo sistema de los tutoriales.
+De momento lo dejaré pte. para estudiar luego de instalar todo.
+=====================================================================================================
+12.40 Envio de emails
+=====================================================================================================
+Creamos el archivo con el comando:              php artisan make:mail UserWelcome
+Vamos al archivo creado:                        app\Mail\UserWelcome.php
+
+Antes del contructor agregamos:                 public $user;
+
+Creamos una vista, en una nueva carpeta asi:    mails\welcome.blade.php
+
+Con este contenido:                             <h1>Bienvenido {{ $user->name }}</h1>
+
+Vamos a UserWelcome.php y modificamos el construct asi
+        -------------------------------------------
+            public function __construct($user)
+            {
+                $this->user = $user;
+            }        
+        -------------------------------------------
+Y en la funcion build el sgte. codigo:
+        -------------------------------------------
+            return $this->from('luisga158@gmail,com')
+            ->view('mails.welcome')
+            ->with([
+                'user' => $this->user
+            ]);
+        -------------------------------------------
+        
+Vamos a App\Http\Controllers\Auth\RegisterController.php
+
+Agregamos:                              use Illuminate\Support\Facades\Mail;
+                                        use App\Mail\UserWelcome;
+                                        use Illuminate\Support\Facades\Hash;
+                                        use App\User;
+                                        
+Modificamos:                            protected $redirectTo = 'home';
+
+El metodo create, que es donde enviariamos el mail, quedaria así:
+-----------------------------------------------------------------------------------------------------
+    protected function create(array $data)
+    {
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+        ]);
+        
+        Mail::to($user->email)->send(new UserWelcome($user));
+        
+        return $user;
+    }
+-----------------------------------------------------------------------------------------------------
+Probado con el mailtrap.
+
+Hay muchos metodos para mail, como atach que permite adjuntar un archivo al mail.
+
+=====================================================================================================
+12.41 Eventos
+=====================================================================================================
+Para la creacion de estos eventos, podemos hacerlo desde la consola de comandos o,
+modificando el archivo App\Providers\EventServiceProvider.php.
+
+
+Vemos un $listen que contiene una clase de evento, seguido de unas clases de acciones a realizar.
+
+Se recomienda colocar cada accion en un listener diferente.
+
+Modificamos nuestro $listen asi:
+
+    protected $listen = [
+        'App\Events\UserRegistered' => [
+            'App\Listeners\SendWelcomeEmail',
+        ],
+    ];
+
+Ejecutamos el comando:          php artisan event:generate
+
+Con esto se crean los archivos:     App\Events\UserRegistered  y  App\Listeners\SendWelcomeEmail
+
+Primero voy a UserRegistered y agrego:
+
+use App\User;
+
+public $user;
+
+    public function __construct($user)
+    {
+        $this->user = $user;
+    }
+
+Vamos al archivo SendWelcomeEmail y:
+
+En el handle colocamos para obtener la variable user desde el evento:   $user = $event->user;
+
+Y luego se envia el correo:              Mail::to($user->email)->send(new UserWelcome($user));
+
+Debemos agregar las clases:             use Illuminate\Support\Facades\Mail;
+                                        use App\Mail\UserWelcome;                                        
+                                        
+Vamos a App\Http\Controllers\Auth\RegisterController.php
+
+ y modificamos:                         Mail::to($user->email)->send(new UserWelcome($user));
+ com:                                   event(new UserRegistered($user));
+ 
+ para lo cual agregamos el:             use App\Events\UserRegistered;
+ 
+
+=====================================================================================================
+12.42 Creación de comandos
+=====================================================================================================
+Ejecutamos el comando:          php artisan make:command UserMail
+
+UserMail es el nombre del comando ejemplo que voy a usar.
+
+Creando un archivo App\Console\Commands\UserMail.php
+
+Definimos el nombre de nuestro comando:         $signature = 'user:mail {id}';
+
+Y la descripcion del mismo:                     $description = 'Envio de correo de bienvenida';
+
+Para el caso importaremos:
+
+use App\User;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\UserWelcome;
+
+En handle definimos la accion o evento:
+
+        $user = User::find($this->argument('id'));
+        if ($user){
+            Mail::to($user->email)->send(new UserWelcome($user));
+            echo "Mensage enviado satisfactoriamente. \n";
+        } else {
+            echo "El usuario no existe \n";
+        }
+
+Ejecutamos el comando:          php artisan user:mail 1
+
+Y vemos el resultado.
+
+Si modificamos:     $signature = 'user:mail {id : Representa el id del usuario} { --flag : Condicional}';
+
+Y ejecutamos el comando:        php artisan user:mail --help
+
+Observaremos como aparecen las definiciones que hallamos declarado.
+
+Si modificamos:     $signature = 'user:mail {id : Representa el id del usuario} { --flag= : Condicional}';
+
+El igual entregado nos permite asignarle un valor, de momento lo hemos hecho muy basico
+
+Agregando antes del envio del mail:
+
+            $option = $this->option('flag');
+            echo $option . "\n";
+            
+Ejecutamos el comando:                      php artisan user:mail 1 --flag Gabriel
+Y veremos los resultados.
+
+Pero podemos ver con el comando:            php artisan make:model --help
+
+La diversidad de usos que podemos tener con dichas flag's.
+
+Un adicional del tutorial es el uso de estos comandos por medio del codigo:
+
+Artisan::call('user:mail', [
+    'id' => 1, '--flag' => 'Flag User'
+]);
+
+Como vemos utiliza el metodo Artisan, y e el ejemplo en el archivo web.php
+
+Al colocarlo en la ruta raiz antes del view, envia el correo cada vez que se va a esa vista.
+
+=====================================================================================================
+12.43 Queues
+=====================================================================================================
+El uso de colas en laravel se encargan de trabajos extensos como el envio de mails masivamente,
+
+El archivo config\queue.php
+
+Vamos a usar de connections, database (driver) y jobs(tabla). Para ello:
+
+Abrimos .env, cambiando QUEUE_CONNECTION=sync   x   QUEUE_CONNECTION=database
+
+Ejecutamos el comando:      php artisan make:job UserEmailWelcome
+
+Creando el archivo:         App\Jobs\UserEmailWelcome.php
+
+El cual contiene un handle encargado de las acciones a realizar como vimos en los comandos.
+
+Agregamos las clases, la variable y el contruct, el handle:
+
+use Illuminate\Support\Facades\Mail;
+use App\Mail\UserWelcome;
+
+protected $user;
+
+public function __construct($user)    {        $this->user = $user;    }
+
+Mail::to($this->user->email)->send(new UserWelcome($this->user));
+
+A continuacion generamos la tabla con el comando:   php artisan queue:table
+
+Creando el archivo de migracion:            database\migrations\2020_08_19_225341_create_jobs_table.php
+
+Luego corremos la migracion con el comando: php artisan migrate
+
+Para ver el ejemplo vamos a crear la ruta en web.php:
+
+use App\Jobs\UserEmailWelcome;
+Route::get('/mail', function(){
+    UserEmailWelcome::dispatch(App::find(1));
+    return 'done';
+});
+
+Para ejecutar la cola ejecutamos el comando:    php artisan queue:work
+
+Con lo anterior, cada vez que se entra a la ruta:           http://127.0.0.1:8000/mail
+
+Se carga el envio del correo a la cola de trabajos, los cuales se procesan con el comando, vaciando la cola.
+=====================================================================================================
+12.44 Integración con redis
+=====================================================================================================
+Vamos a usar Redis para llevar un control de las vistas de los blogs.
+
+En el archivo .env verificamos las sigtes. varriables:
+
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+Luego ejecutamos el comando:            redis-cli
+
+En la pagina de redis ya que no me reconocio el comando, encontre el sigte. codigo para instalar:
+
+                                        npm install -g redis-cli
+                                        
+Sin embargo igual no funciono así que lodejo pendiente.
+
+Es posible que necesite de vagrant y homestade.
+-----------------------------------------------------------------------------------------------------
+Omitiendo lo anterior, y luego de encontral la carpeta Redis en la ruta:
+
+vendor\laravel\framework\src\Illuminate\Redis
+
+Seguire los pasos a ver que pasa.
+
+Voy al archivo:         App\Http\Controllers\PostController.php
+
+y añado el:             use Illuminate\Support\Facades\Redis;
+
+Luego en el metodo show modificamos el codigo así:
+        --------------------------------------------------------
+        $counter = 0;
+        if (Redis::exists('post:views:' . $post->id)){
+            Redis::incr('post:views:' . $post->id);
+            $counter = Redis::get('post:views:' . $post->id);
+        } else {
+            Redis::get('post:views:' . $post->id, 0);
+        }
+        return view('post.show', compact("post", "counter"));
+        --------------------------------------------------------
+        
+Vamos a nuestra vista show y agregamos antes del card body lo sgte:
+              -------------------------------------------------------
+                <div class="card-header d-flex justify-content-end">
+                    <p>Views {{ $counter }}</p>
+                </div>
+              -------------------------------------------------------
+              
+Luego ejecutamos el comando para agregar la lib redis:      composer require predis/predis
+
+Hecho esto ya podemos visitar un post x, y al refrescar la pagina, vemos como se incrementa views
+
+No me funciono sigue pidiendo instalacion de redis.
+=====================================================================================================
+12.45 Task Scheduling
+=====================================================================================================
+Se utiliza para programar tareas en un tiempo especifico, y/o cada tanto tiempo especificado.
+
+En el ejemplo del tutorial usa Redis, así que lo dejaré para luego.
+=====================================================================================================
+13.46 Subir proyecto al servidor
+=====================================================================================================
+Primero creamos el repositorio en github
+
+En mi caso le puse el nombre:           tutorialblog1
+
+A continuacion copio la linea:          git remote add origin https://github.com/luisga158/tutorialblog1.git
+
+Ejecuto el comando:                     git ini
+
+git remote add origin https://github.com/luisga158/tutorialblog1.git
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+En los tutoriales se observa el uso de Ming64, asi que vamos a ver si asi nos permite seguir los pasos.
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+
+
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+No pertenece a los tutoriales esta en la documentacion de Laravel Server Test. Pte por comprender.
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+=====================================================================================================
+Instalando servidor para pruevas guide Doc Laravel Page ( Usando Dusk )
+=====================================================================================================
+1.- 	composer require --dev laravel/dusk
+2.-	    php artisan dusk:install
+3.-	    php artisan dusk
+
+Si hay errores
+
+4.-	    php artisan dusk:fails
+
+======================================================================================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+Recopilando y resumiendo pasos para proyecto
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+======================================================================================
+1.-	laravel new proyect_name
+o:	composer create-project --prefer-dist laravel/laravel proyect_name
+
+Ya dentro de la carpeta del proyecto proyect_name:
+
+2.-	composer require laravel/ui
+3.-	php artisan ui vue --auth
+4.-	npm install && npm run dev
+5.-	composer require laravelcollective/html
+
+Creando tablas iniciales (probar):
+
+6.-	php artisan migrate
+o:	php artisan migrate --all
+
+Creando modelo y migracion, tablas, controlador y recurso:
+
+7.-	php artisan make:model Name_Table -m
+
+En el archivo de la migracion definimos los campos que queremos agregar al modelo creado, en la funcion up.
+Y en el archivo del modelo en la carpeta app, agregamos los mismos campos agregados en la migracion.
+
+Despues de las modificaciones anteriores, con el comando 'php artisan migrate:refresh', actualiza las bd en phpmyadmin.
+
+8.-	php artisan migrate:refresh
+
+Luego se crea  el controlador (app\http\Controllers) y el recurso (las vistas) - (resources\views)
+
+9.-	php artisan make:controller admin/Name_TableController --resource
+
+Definir nuestras rutas en, variables de entorno (conexion 1o):
+
+10.-	web.php
+11.-	.env
+
+Ver rutas diaponibles:	php artisan route:list
+
+routes\web.php	Archivo para la configuración de rutas.
+		Ej:  (Vemos como cambiamos la url de products a productos)
+			Route::resource('productos','admin\ProductController')->names('products');
+
+resources\views	Carpeta que contiene los archivos configurados en las rutas.
+		Ej. Comando para crear el controlador:
+			php artisan make:controller admin/ProductController --resource
+
+app\http\Controllers		Carpeta que archiva los controladores, en la subcarpeta indicada.
+
+Comando para refactorizar
+12.-    composer dump-autoload

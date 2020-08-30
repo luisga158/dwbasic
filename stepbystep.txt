@@ -1,0 +1,139 @@
+En la carpeta de mis proyectos (practicas), desde la consola de comandos:
+
+1.-     laravel new dw      o       laravel new dw --auth
+2.-     cd dw
+3.-     composer require laravel/ui
+4.-     npm install && npm run dev
+5.-     composer require laravelcollective/html
+
+=====================================================================================================
+
+Luego voy a mi archivo .env y modifique:        APP_NAME=WebDevelopment
+                                                DB_DATABASE=laraveldw
+                                                QUEUE_CONNECTION=database
+                                                MAIL_USERNAME=4df51a0a1f967e
+                                                MAIL_PASSWORD=aaae23dade4fb4
+                                                MAIL_ENCRYPTION=tls
+                                                
+Y elimine:                                      MAIL_ENCRYPTION=null
+                                                MAIL_FROM_ADDRESS=null
+                                                MAIL_FROM_NAME="${APP_NAME}"
+                                                
+En el archivo config\app.php cambie:                            'locale' => 'es'
+
+Es necesario crear la base de datos (DB_DATABASE):              laraveldw
+
+=====================================================================================================
+
+Dentro de resources\lang\es y resources\lang\en cree main.php.
+
+Y coloque mis eqtiquetas para usar en mis plantillas con diversos idiomas.
+Aunque la verdadera razon es para tener las variables alli creadas como parte de las plantillas,
+y reutilizarlas, en donde sea necesario.
+
+Luego modifique las vistas basandome en ello.
+
+=====================================================================================================
+
+Para crear automaticamente las tablas iniciales predeterminadas, usamos el comando:
+
+6.- php artisan migrate
+
+Para eliminar las tablas usamos:
+
+7.- php artisan migrate:rollback
+
+Para eliminar y recrear usamos:
+
+8.- php artisan migrate:refresh
+
+Para crear modelo y migracion (Luego se corre refresh):
+
+9.- php artisan make:model Product -m
+
+Para crearel controlador y el recurso:
+
+10.- php artisan make:controller admin/ProductController --resource
+
+Ver lista de rutas:
+
+11.- php artisan route:list
+
+A continuacion modifique las vistas iniciales de Laravel con etiquetas como:    @lang('main.lblrst')
+
+=====================================================================================================
+12.0.- Advertencia el listener original en el archivo app\Providers\EventServiceProvider.php es:
+
+    protected $listen = [
+        Registered::class => [
+            SendEmailVerificationNotification::class,
+        ],
+    ];
+    
+Si se elimina o remplaza por el creado en los sgtes. pasos no enviara el correo de verificacion.
+
+Encontre la plantilla del correo de verificacion en la sgte. ruta
+
+vendor\laravel\framework\src\Illuminate\Notifications\resources\views\email.blade.php
+
+El mensage esta en ingles, y quiero que se adapte al español, así que modicare sus textos por
+etiquetas @lang
+
+Dejé una copia del original y modifique el original.
+
+=====================================================================================================
+
+Para la autenticacion en laravel usamos el comando:
+
+13.- php artisan ui:auth
+
+O directamente al crear el proyecto con:
+
+14.- laravel new dw --auth
+
+-----------------------------------------------------------------------------------------------------
+
+Creando los archivos necesarios:
+
+En la carpeta App\Http\Controllers\Auth
+
+-----------------------------------------------------------------------------------------------------
+
+En el archivo:                              RegisterController.php
+
+Eliminamos:                                 use App\Providers\RouteServiceProvider;
+
+Agregamos:                                  use Illuminate\Support\Facades\Mail;
+                                            use App\Mail\UserWelcome;
+                                            use App\Events\UserRegistered;
+                                            
+Y en la funcion create modificamos el codigo, dejandolo así:
+   ------------------------------------------------------------
+    protected function create(array $data)
+    {
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+        ]);
+        event(new UserRegistered($user));        
+        return $user;
+    }
+   ------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------
+
+Los siguientes cambio para la confirmacion de email son:
+
+15.1.- En la clase User modificamos asi:        
+
+                    class User extends Authenticatable implements MustVerifyEmail
+
+15.2.- En el archivo web.php agregamos:
+
+                    Auth::routes(['verify' => true]);
+                    
+                    Route::group(['middleware' => 'verified'], function(){
+                    Route::get('/home', 'HomeController@index')->name('home');
+                    });
+                    
